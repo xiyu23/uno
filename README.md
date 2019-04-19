@@ -1,7 +1,7 @@
 # uno
 score caculator for UNO, which is a popular desktop card game
 
-# What's the capable of it
+# What's it capable of
 Without having to write down and caculate everyone's score after each round manually. Instead, all you need is just type in everyone's score, leave the trivialness to the program!
 
 # How to play with it
