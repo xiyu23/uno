@@ -305,12 +305,33 @@
             right: 0px;
             z-index: 1;
         }
+        .uno-audio{
+            position: fixed;
+            bottom: 0px;
+            margin: 0 auto;
+            left: 0px;
+            right: 0px;
+            text-align: center;
+            opacity: .4;
+            transition: opacity .4s linear;
+        }
+        .uno-audio:hover{
+            opacity: 1;
+        }
+        
     </style>
     
 </head>
 <body>
     <div id='divUNO'></div>
-
+    <div class='uno-audio'>
+        <iframe src="audio/silence-1s.mp3" allow="autoplay" id="audio" style="display:none"></iframe>
+        <audio controls autoplay loop>
+            <source src="audio/Main Title (Game Of Thrones).aac" type="audio/acc">
+            <source src="audio/Main Title (Game Of Thrones).ogg" type="audio/ogg">
+            <source src="audio/Main Title (Game Of Thrones).mp3" type="audio/mp3">
+        </audio>
+    </div>
     <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
     <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
