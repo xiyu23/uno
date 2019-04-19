@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta charset="UTF-8">
+    <title>Welcome to xiyu's UNO score caculator v0.3!</title>
+    <style>
+        body{
+            font-family: Consolas, Microsoft Yahei;
+            font-size:1em;
+        }
+        table{
+            table-layout: fixed;
+            width: 80%;
+            margin: 0 auto;
+            text-align: center;
+        }
+        #inputRow td input{
+            display: inline-block;
+            width: 98%;
+        }
+        .bottomButton{
+            text-align: center;
+            margin: 10px;
+            padding: 6px;
+            text-align: center;
+            border: none;
+        }
+        #btnNewGame{
+            background: forestgreen;
+            color: white;
+        }
+        #setUp button{
+            margin-left: 5px;
+        }
+
+        body button:active{
+            position: relative;
+            top:2px;
+        }
+        body button{
+            border-style:none;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 1em;
+        }
+
+        .tfoot{
+            position: relative;
+        }
+        .tfoot::before{
+            content: '总分';
+            position: absolute;
+            left: 5px;
+            color: #349724;
+            font-weight: bold;
+        }
+        button:disabled{
+            background: grey !important;
+            color: white !important;
+        }
+
+        /* v0.2 css */
+        table th{
+            height: 26px;
+            line-height: 26px;
+            padding-top: 16px;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .owner{
+            background-image: url(img/goldcrown.jpg);
+            background-size: 16px 16px;
+            background-repeat: no-repeat;
+            background-position-x: center;
+            background-position-y: top;
+        }
+        input.totalScore{
+            text-align: center;
+            display: inline-block;
+            height:20px;
+            line-height: 20px;
+            width:50px;
+            border:none;
+            border-bottom: 1px solid gold;
+            font-size: 1em;
+            font-weight: bold;
+            color:coral;
+        }
+        .uno-header{
+            height: 30px;
+            line-height: 30px;
+        }
+        .uno-header > div:nth-child(1){
+            float: left;
+        }
+        .uno-header > div:nth-child(2){
+            float: right;
+        }
+        div.start-game{
+            text-align: center;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50%);
+            font-size: 1.4em;
+        }
+        div.start-game > button{
+            background-color: #349724;
+            color: white;
+        }
+        button.add-round-score{
+            background-color: #349724;
+            color: white;
+            text-align: center;
+        }
+        tr.input-row td{
+            padding: 0px 2px;
+        }
+        tr.input-row td input{
+            width: 80%;
+            height: 100%;
+            max-width: 50px;
+            font-size: 16px;
+            text-align: center;
+            border: 1px solid coral;
+            padding: 2px 4px 0px;
+        }
+        tr.add-button-row{
+            height: 70px;
+            border-bottom: 1px dashed green;
+        }
+        tr.total-score-row{
+            font-size: 1.2em;
+            font-weight: bold;
+            font-style: italic;
+        }
+        .make-choice{
+            top: 50%;
+            left: 50%;
+            font-size: 1.4em;
+            transform: translateX(-50%) translateY(-50%);
+            margin: 0 auto;
+            position: absolute;
+            white-space: nowrap;/* very important, cause button also is inline elements, when too long it will wrap to next line */
+        }
+        .create-room{
+            background-color: #ff9b00;
+            margin-right: 8px;
+            color: white;
+        }
+        .join-room{
+            background-color: #18b4f4;
+            margin-left: 8px;
+            color: white;
+        }
+        html{
+            width:100%;
+            height: 100%;
+        }
+        body{
+            position: absolute;
+            width:100%;
+            height:100%;
+            margin:0px;
+        }
+        #divUNO, #divUNO > div{
+            position: absolute;
+            top: 0px;
+            bottom: 0px;
+            padding: 0px 15px;
+            left: 0px;
+            right: 0px;
+        }
+        .creating-dialog,.joining-dialog{
+            top: 50%;
+            left: 50%;
+            font-size: 1.4em;
+            transform: translateX(-50%) translateY(-50%);
+            margin: 0 auto;
+            position: absolute;
+            white-space: nowrap;
+            width: 76%;
+            color: white;
+        }
+        .creating-dialog p,.joining-dialog p{
+            position: relative;
+        }
+        .creating-dialog p input,.joining-dialog p input{
+            border: none;
+            border-bottom: 1px solid #ff9b00;
+            height: 100%;
+            position: absolute;
+            font-size: 1em;
+            left: 110px;
+            right: 0px;
+            line-height: 1;
+            width: 60%;
+        }
+        .creating-dialog p input{
+            color:#FF9800;
+        }
+        .joining-dialog p input{
+            color:#18b4f4;
+        }
+        .joining-dialog p input{
+            border-bottom: 1px solid #18b4f4;
+        }
+        .creating-dialog > div,.joining-dialog > div{
+            text-align: center;
+        }
+        .creating-dialog > div > button:nth-child(1){
+            background-color: #ff9b00;
+            margin-right: 8px;
+            color: white;
+        }
+        .creating-dialog > div > button:nth-child(2),.joining-dialog > div > button:nth-child(2){
+            background-color:lightgray;
+            margin-left: 8px;
+            color: white;
+            width:110px;
+        }
+        .joining-dialog > div > button:nth-child(1){
+            background-color: #18b4f4;
+            margin-right: 8px;
+            color: white;
+        }
+        .room-id{
+            color:dodgerblue;
+            font-weight: bold;
+        }
+        .game-body{
+            padding-top: 60px;
+        }
+        .game-body .uno-header{
+
+        }
+        .boom-score{
+            color: red;
+        }
+
+        .bg{
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+        }
+        
+        .wm01{
+            background-image: url(img/wm01.jpg);
+            color:aquamarine;
+        }
+        .wm02{
+            background-image: url(img/wm02.jpg)
+        }
+        .htt01{
+            background-image: url(img/htt01.jpg);
+            color:pink;
+        }
+        .htt02{
+            background-image: url(img/htt02.jpg)
+        }
+        .htt03{
+            background-image: url(img/htt03.jpg)
+        }
+        .zll01{
+            background-image: url(img/zll01.jpg);
+            color:pink;
+        }
+        .zll02{
+            background-image: url(img/zll02.jpg)
+        }
+        .yg01{
+            background-image: url(img/yg01.jpg);
+            color:yellowgreen;
+        }
+        .hy01{
+            background-image: url(img/hy01.jpg)
+        }
+        .uno-theme{
+            background-image: url(img/uno-theme.jpg);
+            background-size: cover;
+        }
+        .uno-theme2{
+            background-image: url(img/uno-theme2.jpg);
+            background-size: cover;
+        }
+
+        .main-page{
+            
+        }
+        .uno-title{
+            text-align: center;
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            z-index: 1;
+            color: cornsilk;
+        }
+        .uno-title-inplaying{
+            text-align: center;
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            z-index: 1;
+        }
+    </style>
+    
+</head>
+<body>
+    <div id='divUNO'></div>
+
+    <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
+    <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+    <!-- <script src="/socket.io/socket.io.js"></script> -->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js'></script>
+
+    <script>
+        var socket = io();
+    </script>
+
+    <script type="text/javascript" src="js/uno.js"></script>
+</body>
+</html>
