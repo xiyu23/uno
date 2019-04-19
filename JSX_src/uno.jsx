@@ -14,6 +14,18 @@ class UnoClient extends React.Component{
         this.setJoinRoomEvent();
         this.setGameStartedEvent();
         this.setAddNewRoundScoreEvent();
+        this.setPlayerExitEvent();
+    }
+
+    clearState(){
+        this.setState({
+            gameStatus: '',
+            me: '',
+            roomID: '',
+            owner: '',
+            totalScore: 500,
+            players: []
+        })
     }
 
     //刷新浏览器，服务器接收到新连接有cookie，证明是一个有效的会话
@@ -88,6 +100,28 @@ class UnoClient extends React.Component{
 
             that.setState(msg)
         });
+    }
+
+    setPlayerExitEvent(){
+        let that = this;
+        socket.on('onExitRoom', function(msg){
+            if (msg.err){
+                console.log(msg.err)
+                return;
+            }
+            
+            //leaving person
+            if (msg.msg == 'OK'){
+                //清除所有状态
+                that.clearState();
+                return;
+            }
+
+            //others that are still in the room
+            //msg = {whoLeaved: xx, roominfo: xx}
+            console.log('player ' + msg.whoLeaved + ' leaves game')
+            that.setState(msg.roominfo)
+        })
     }
 
     handleMakeChoice(flag){
@@ -185,6 +219,23 @@ class UnoClient extends React.Component{
         this.setState({totalScore:totalScore})
     }
 
+    //玩家离开房间
+    handleExitRoom(){
+        //delete cookie
+        document.cookie = 'usrid=;max-age=0';
+        let whoIsGonnaLeave = this.state.me;
+        if (!whoIsGonnaLeave){
+            console.log('Exit room error: cannot get who is gonna leave')
+            return;
+        }
+        let roomID = this.state.roomID;
+        if (!roomID){
+            console.log('Exit room error: cannot get roomID to leave');
+            return;
+        }
+        console.log('Exit room: ' + whoIsGonnaLeave + ' is gonna leave this room(room ID='+ roomID +')...')
+        socket.emit('onExitRoom', {who: whoIsGonnaLeave, roomid: roomID})
+    }
     render(){
         console.log('updated')
         let notReadyToPlay = !this.state.gameStatus || this.state.gameStatus == 'creating' || this.state.gameStatus == 'joining';
@@ -219,6 +270,7 @@ class UnoClient extends React.Component{
                             handleAddRoundScore={this.handleAddRoundScore.bind(this)}
                             handleStartGame={this.handleStartGame.bind(this)}
                             handleTotalScoreChange={this.handleTotalScoreChange.bind(this)}
+                            handleExitRoom={this.handleExitRoom.bind(this)}
                             />
                 }
             </div>
@@ -245,6 +297,10 @@ class GameBody extends React.Component{
 
     handleAddRoundScoreClick(newRoundScore){
         this.props.handleAddRoundScore(newRoundScore)
+    }
+
+    handleExitRoomClick(){
+        this.props.handleExitRoom()
     }
 
     render(){
@@ -276,6 +332,7 @@ class GameBody extends React.Component{
         //totalScore=[23,2]
         return (
             <div className='game-body'>
+                <div><button type='button' onClick={this.handleExitRoomClick.bind(this)}>退出房间</button></div>
                 <div className='uno-header'>
                     <div>
                         <label>Total Score:</label>
@@ -305,6 +362,8 @@ class GameBody extends React.Component{
                 </table>
 
                 { this.props.gameStatus == 'ReadyToPlay' && this.props.owner == this.props.me && <div className='start-game'><button type='button' onClick={this.handleStartGameClick.bind(this)}>开始游戏</button></div> }
+
+                
                 
             </div>
         )

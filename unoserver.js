@@ -59,7 +59,57 @@ io.on('connection', (socket) => {
     console.log('user disconnected');
   });
 
- 
+  function SendErrorToExitRoom(errmsg){
+    socket.emit('onExitRoom', {err: errmsg})
+  }
+
+  //离开房间
+  socket.on('onExitRoom', data=>{
+      //data={who: whoIsGonnaLeave, roomid: roomID}
+      let who = data.who, roomid = data.roomid;
+      let errmsg = '';
+      if (!who){
+        errmsg = '[onExitRoom]cannot get who is gonna to leave'
+        SendErrorToExitRoom(errmsg)
+        return;
+      }
+      if (!roomid){
+        errmsg = `[onExitRoom]cannot get which room ID he(${who}) is gonna to leave`
+        SendErrorToExitRoom(errmsg)
+        return;
+      }
+      if (!rooms[roomid]){
+        errmsg = `[onExitRoom]the room user ${who} gonna to leave is not found in rooms.`
+        SendErrorToExitRoom(errmsg)
+        return;
+      }
+
+      //trying to leave...
+      console.log(`[onExitRoom]user ${who} is gonna leave room(room ID=${roomid})...`)
+      socket.leave(roomid, err => {
+        if (err){
+          let errmsg = `[onExitRoom]socket.leave error. user: ${who}, roomid: ${roomid}, err: ${err}`;
+          socket.emit('onExitRoom', {err: errmsg})
+          return;
+        }
+        console.log(`[onExitRoom]user ${who} leaved. (room ID=${roomid})`)
+
+        let players = rooms[roomid].players.filter(player => player.name != who)
+        rooms[roomid].players = players;
+  
+        //如果离开的是房主，则指定第一个玩家为新房主
+        if (0 < players.length && who == rooms[roomid].owner){
+          rooms[roomid].owner = players[0].name;
+          console.log(`[onExitRoom]room owner changes to ${players[0].name}`)
+        }
+        
+        //emit to all except the one who is leaving
+        socket.to(roomid).emit('onExitRoom', {whoLeaved: who, roominfo: rooms[roomid]})
+
+        //emit to himself that every thing is ok
+        socket.emit('onExitRoom', {msg: 'OK'})
+      })
+  })
   
 
   //创建房间
