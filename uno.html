@@ -111,6 +111,16 @@
             background-color: #349724;
             color: white;
         }
+        div.new-round{
+            margin-top:20px;
+            margin-bottom:20px;
+            text-align: center;
+            font-size: 1.4em;
+        }
+        div.new-round > button{
+            background-color: orangered;
+            color: white;
+        }
         button.add-round-score{
             background-color: #349724;
             color: white;
@@ -318,7 +328,37 @@
         .uno-audio:hover{
             opacity: 1;
         }
-        
+        .exit-icon{
+            background: url(img/exit.png) no-repeat;
+            background-size: contain;
+            background-position: left center;
+            padding-left: 34px;
+            border: 1px solid red;
+            color: red;
+            font-weight: bold;
+        }
+        .prompt-msg{
+            position: fixed;
+            bottom: 34px;
+            border-radius: 10px;
+            left: 15px;
+            right: 15px;
+            opacity: 0.1;
+            transition: opacity 1s linear;
+            padding: 6px 15px;
+        }
+        .prompt-msg.info{
+            border: 2px solid skyblue;
+            background-color: aqua;
+            color:goldenrod;
+            opacity: 1;
+        }
+        .prompt-msg.error{
+            border: 2px solid red;
+            color:white;
+            background-color: lightpink;
+            opacity: 1;
+        }
     </style>
     
 </head>

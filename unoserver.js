@@ -117,6 +117,8 @@ io.on('connection', (socket) => {
         let players = rooms[roomid].players.filter(player => player.name != who)
         rooms[roomid].players = players;
   
+        //console.log('players still in room count: ' + players.length)
+        //console.log('current room owner: ' + rooms[roomid].owner)
         //如果离开的是房主，则指定第一个玩家为新房主
         if (0 < players.length && who == rooms[roomid].owner){
           rooms[roomid].owner = players[0].name;
