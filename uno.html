@@ -324,14 +324,15 @@
 </head>
 <body>
     <div id='divUNO'></div>
-    <div class='uno-audio'>
-        <iframe src="audio/silence-1s.mp3" allow="autoplay" id="audio" style="display:none"></iframe>
-        <audio controls autoplay loop>
-            <source src="audio/Main Title (Game Of Thrones).aac" type="audio/acc">
+    <!-- <div class='uno-audio'>
+        <iframe src="" allow="autoplay" id="audio" style="display:none"></iframe>
+        <audio controls autoplay>
+             <source src="audio/Main Title (Game Of Thrones).aac" type="audio/acc"> 
             <source src="audio/Main Title (Game Of Thrones).ogg" type="audio/ogg">
-            <source src="audio/Main Title (Game Of Thrones).mp3" type="audio/mp3">
+            <source src="audio/Main Title (Game Of Thrones).mp3" type="audio/mp3"> 
+            <source src='http://www.ytmp3.cn/down/34134.mp3' type='audio/mp3'>
         </audio>
-    </div>
+    </div> -->
     <script type="text/javascript" src="js/jquery-1.10.2.min.js"></script>
     <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
@@ -343,5 +344,11 @@
     </script>
 
     <script type="text/javascript" src="js/uno.js"></script>
+
+    <script type='text/javascript'>
+        // $(function(){
+        //     document.getElementById('audio').src = 'audio/silence-1s.mp3';
+        // });
+    </script>
 </body>
 </html>

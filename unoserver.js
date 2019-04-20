@@ -11,7 +11,6 @@ var io = socketIO(http)//bind socket.io to http server
 
 const PORT = 1991;
 const HOST = 'localhost';
-const fs = require('fs')
 
 var users = {};
 var NEXT_USR_ID = 1;
@@ -24,8 +23,7 @@ app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
 io.on('connection', (socket) => {
-  console.log('a user connected, check his identity...')
-  console.log('trying to get his cookie...')
+  console.log('a user connected, trying to get his cookie...')
 
   var cookief = socket.handshake.headers.cookie; 
   var cookies = cookie.parse(cookief);
@@ -62,6 +60,28 @@ io.on('connection', (socket) => {
   function SendErrorToExitRoom(errmsg){
     socket.emit('onExitRoom', {err: errmsg})
   }
+  function SendErrorToStartNextRound(errmsg){
+    socket.emit('onStartNextRound', {err: errmsg})
+  }
+
+  //房主重开一把
+  socket.on('onStartNextRound', data => {
+    let roomid = data.roomID;
+    if (!roomid || !rooms[roomid]){
+        errmsg = `[onStartNextRound]cannot get room ID(${roomid}), or no this room is found in rooms`
+        SendErrorToStartNextRound(errmsg)
+        return;
+    }
+
+    //房间改为ready to play状态、清除大家的分数
+    rooms[roomid].players.forEach(player=>{
+      player.total = 0;
+      player.roundScores = [];
+    })
+    rooms[roomid].gameStatus = 'ReadyToPlay';
+
+    io.to(roomid).emit('onStartNextRound', rooms[roomid])
+  })
 
   //离开房间
   socket.on('onExitRoom', data=>{
@@ -142,9 +162,6 @@ io.on('connection', (socket) => {
 
   //玩家加入房间
   socket.on('onJoinRoom', function(data){
-    console.log('[onJoinRoom]fired, data: ')
-    console.log(data)
-
     let roomID = data.roomID,
     player = data.player;
     if (!rooms[roomID]){
@@ -178,16 +195,6 @@ io.on('connection', (socket) => {
         //notify all in this room
         //不应该告诉其他人加入者的usrid，TODO
         io.to(roomID).emit('onJoinRoom', {whoJoinedIn:player, usrid: NEXT_USR_ID-1,...rooms[roomID]})
-
-        
-
-        //notify current player different msg
-        //新玩家加入房间，给他提示当前已加入房间的玩家
-        // var prvmsg = [];
-        // rooms[roomID].players.forEach(player=>{
-        //    prvmsg.push('玩家 ['+player+'] 加入了房间！')
-        // })
-        //socket.emit('onJoinRoom', {me:player, ...rooms[roomID]})
       }
     })
   });
@@ -270,10 +277,7 @@ io.on('connection', (socket) => {
 
 })
 
-
-
 app.get('/uno.html', (req, res, next) => {
-  console.log('get: /uno.html')
       var options = {
       root: __dirname
     }
@@ -282,104 +286,8 @@ app.get('/uno.html', (req, res, next) => {
       console.log('error occurred:'+err)
       next(err)//by passing control to the next route
     }
-    else{
-      console.log('file uno.html has been sent...')
-    }
   })
 })
-
-//1. 如何在node server中响应ajax请求
-app.post('/uno.html', (req, res, next) => {
-  console.log('handle requests for /uno.html...')
-console.log(req.body)
-  var cmd = req.body.cmd;
-  if (!cmd){
-    next();
-    console.log('statement after \'next\' is ALSO executed.')
-    return;
-  }
-
- var responseData = '';
- switch (cmd){
-   case "CreateRoom":responseData=CreateRoom(req.body);break;
-   case "JoinRoom":responseData=JoinRoom(req.body);break;
-   case "hello":responseData=hello(req.body);break;
-   default:
-    responseData = 'invalid cmd found';break;
- }
-
-
- console.log('ready to send data:')
- console.log(responseData)
-  res.json(responseData)
-})
-
-function CreateRoom(data){
-  var houseOwner = data.houseOwner,
-  totalScore = data.totalScore;
-  var roomID = NEXT_ROOM_ID++;
-  rooms[roomID] = {
-    owner: houseOwner,
-    totalScore: totalScore,
-    players: [houseOwner]
-  };
-  var resData = {roomID: roomID};
-  return resData;
-}
-
-function JoinRoom(data){
-  let roomID = data.roomID,
-      player = data.player;
-  if (!rooms[roomID]){
-      return {err: 'Faild to join room! Because cannot find the given room: ' + roomID};
-  }
-
-  //add player
-  rooms[roomID].players.push(player)
-
-  //send notify to other players in this room
-  // SendNotify({
-  //   event: 'JoinRoom',
-  //   data: {
-  //     player: player
-  //   }
-  // });
-  let roomInfo = rooms[roomID];
-
-  return roomInfo;
-}
-
-//主动向客户端发送消息
-function SendNotify(data){
-
-}
-
-function JSONError(errmsg){
-  return {err:errmsg}
-}
-
-// app.get('*', (req, res, next) =>{
-//     var options = {
-//       root: __dirname
-//     }
-  
-//     console.log('request coming:' + req.originalUrl);
-  
-//     //console.log(req)
-//     res.sendFile('uno.html', options, err => {
-//       if (err){
-//         console.log('error occurred:'+err)
-//         next(err)//by passing control to the next route
-//       }
-//       else{
-//         console.log('file uno.html has been sent...')
-//       }
-//     })
-//   })
-
-// http.listen(PORT, HOST, () => {
-//     console.log(`UNO Server is running on http://${HOST}:${PORT} ...`);
-//   });
 
 http.listen(PORT, HOST, () => {
   console.log(`UNO Server is running on http://${HOST}:${PORT} ...`);

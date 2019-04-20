@@ -15,6 +15,7 @@ class UnoClient extends React.Component{
         this.setGameStartedEvent();
         this.setAddNewRoundScoreEvent();
         this.setPlayerExitEvent();
+        this.setStartNextRoundEvent();
     }
 
     clearState(){
@@ -124,6 +125,25 @@ class UnoClient extends React.Component{
         })
     }
 
+    //再开一把
+    setStartNextRoundEvent(){
+        
+        let that = this;
+        socket.on('onStartNextRound', msg => {
+            if (msg.err){
+                console.log(msg.err)
+                return;
+            }
+
+            console.log('start next round is allowed.')
+
+            that.setState(msg)
+
+            
+        })
+        
+    }
+
     handleMakeChoice(flag){
         if (flag == 'create'){
             flag = 'creating'
@@ -214,6 +234,12 @@ class UnoClient extends React.Component{
         socket.emit('onGameStarted', {roomID:this.state.roomID, totalScore:val})
     }
 
+    //再开一把
+    hanldStartNextGame(){
+        console.log('next round is on the fly, please wait...')
+        socket.emit('onStartNextRound', {roomID:this.state.roomID})
+    }
+
     //总分修改
     handleTotalScoreChange(totalScore){
         this.setState({totalScore:totalScore})
@@ -269,6 +295,7 @@ class UnoClient extends React.Component{
                             roomID={this.state.roomID}
                             handleAddRoundScore={this.handleAddRoundScore.bind(this)}
                             handleStartGame={this.handleStartGame.bind(this)}
+                            hanldStartNextGame={this.hanldStartNextGame.bind(this)}
                             handleTotalScoreChange={this.handleTotalScoreChange.bind(this)}
                             handleExitRoom={this.handleExitRoom.bind(this)}
                             />
@@ -293,6 +320,9 @@ class GameBody extends React.Component{
         this.props.handleStartGame()
     }
 
+    handleStartNextRoundClick(){
+        this.props.hanldStartNextGame()
+    }
     
 
     handleAddRoundScoreClick(newRoundScore){
@@ -363,7 +393,7 @@ class GameBody extends React.Component{
 
                 { this.props.gameStatus == 'ReadyToPlay' && this.props.owner == this.props.me && <div className='start-game'><button type='button' onClick={this.handleStartGameClick.bind(this)}>开始游戏</button></div> }
 
-                
+                { this.props.gameStatus == 'GameOver' && this.props.owner == this.props.me && <div className='start-game new-round'><button type='button' onClick={this.handleStartNextRoundClick.bind(this)}>再开一把</button></div> }
                 
             </div>
         )
