@@ -10,6 +10,7 @@ var http = httpModule.Server(app);
 var io = socketIO(http)//bind socket.io to http server
 
 const PORT = 1991;
+//const HOST = '192.168.2.101';
 const HOST = 'localhost';
 
 var users = {};
@@ -104,6 +105,20 @@ io.on('connection', (socket) => {
         return;
       }
 
+      //check if he is in the room for now
+      let isInRoom = false;
+      for (let i = 0, len = rooms[roomid].players.length; i < len; i++){
+        if (rooms[roomid].players[i].name == who){
+            isInRoom = true;
+            break;
+        }
+      }
+      if (!isInRoom){
+        errmsg = `[onExitRoom]for the room(ID=${roomid}) user ${who} gonna to leave, this guy is not in this room right now! Maybe had left due to the same cookie for single browser?`
+        SendErrorToExitRoom(errmsg)
+        return;
+      }
+
       //trying to leave...
       console.log(`[onExitRoom]user ${who} is gonna leave room(room ID=${roomid})...`)
       socket.leave(roomid, err => {
@@ -117,14 +132,20 @@ io.on('connection', (socket) => {
         let players = rooms[roomid].players.filter(player => player.name != who)
         rooms[roomid].players = players;
   
-        //console.log('players still in room count: ' + players.length)
-        //console.log('current room owner: ' + rooms[roomid].owner)
+        if (players.length < 1){//最后一个玩家离开，删除房间
+            console.log(`[onExitRoom]last player leaved, delete roomID=${roomid}`)
+            delete rooms[roomid]
+            //emit to himself that every thing is ok
+            socket.emit('onExitRoom', {msg: 'OK'})
+            return;
+        }
+
         //如果离开的是房主，则指定第一个玩家为新房主
-        if (0 < players.length && who == rooms[roomid].owner){
+        if (who == rooms[roomid].owner){
           rooms[roomid].owner = players[0].name;
           console.log(`[onExitRoom]room owner changes to ${players[0].name}`)
         }
-        
+
         //emit to all except the one who is leaving
         socket.to(roomid).emit('onExitRoom', {whoLeaved: who, roominfo: rooms[roomid]})
 

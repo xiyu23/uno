@@ -203,7 +203,7 @@ class UnoClient extends React.Component{
                 //玩家本人加入游戏
                 console.log('玩家加入游戏，设置cookie: usrid='+playerID)
                 //set cookie
-                document.cookie = 'usrid='+playerID+';max-age=60';
+                document.cookie = 'usrid='+playerID+';max-age=3600';
                 this.setState({me:whoJoinedIn, ...param})
             }
             else{
@@ -377,7 +377,7 @@ class GameBody extends React.Component{
                 <div className='uno-header'>
                     <div>
                         <label>Total Score:</label>
-                        <input type='number' title='' value={this.props.totalScore} disabled={this.props.owner != this.props.me || this.props.gameStatus != 'ReadyToPlay'} 
+                        <input type='number' value={this.props.totalScore} disabled={this.props.owner != this.props.me || this.props.gameStatus != 'ReadyToPlay'} 
                         onChange={this.handleTotalScoreChange.bind(this)} className='totalScore'
                         />
                     </div>
@@ -488,7 +488,8 @@ class ScoreInputRow extends React.Component{
         }
 
         this.state = {
-            newRoundScore: newRoundScore
+            newRoundScore: newRoundScore,
+            playerCount: this.props.playerCount
         }
     }
     
@@ -531,9 +532,30 @@ class ScoreInputRow extends React.Component{
         this.setState({newRoundScore:newRoundScore})
     }
 
+    //invoked before every render()
+    static getDerivedStateFromProps(props, state){
+        //src=https://reactjs.org/blog/2018/06/07/you-probably-dont-need-derived-state.html#anti-pattern-unconditionally-copying-props-to-state
+        //设计的不太好
+        //如果有人退出，分数数组长度 != 当前玩家人数，而且我是按序号排input的，这里不科学
+
+        //return null to indicate no changes to state
+        if (props.playerCount == state.playerCount){
+            return null;
+        }
+
+        let newRoundScore = []
+        for (let i = 0; i < props.playerCount; i++){
+            newRoundScore.push('')
+        }
+        return {
+            newRoundScore:newRoundScore,
+            playerCount: props.playerCount
+        };
+    }
+
     render(){
         let groups = [];
-        for (let i = 0; i < this.state.newRoundScore.length; i++){
+        for (let i = 0; i < this.props.playerCount; i++){
             groups.push(<ScoreInputCell handleScoreChange={this.handleScoreChange.bind(this)} index={i} key={i} score={this.state.newRoundScore[i]}/>)
         }
         
@@ -543,7 +565,7 @@ class ScoreInputRow extends React.Component{
                 { this.props.gameStatus == 'InPlaying' && 
                       this.props.owner == this.props.me &&
                       
-                    <tr className='add-button-row'><td colSpan={this.state.newRoundScore.length}><button type='button' className='add-round-score' onClick={this.handleAddRoundScoreClick.bind(this)}>确认添加本轮分数</button></td></tr>
+                    <tr className='add-button-row'><td colSpan={this.props.playerCount}><button type='button' className='add-round-score' onClick={this.handleAddRoundScoreClick.bind(this)}>确认添加本轮分数</button></td></tr>
                 }
             </React.Fragment>
         )
@@ -706,7 +728,7 @@ class CreateRome extends React.Component{
             let roominfo = msg.roominfo;
             //set cookie
             console.log('设置房主cookie: usrid='+msg.usrid)
-            document.cookie = 'usrid='+msg.usrid+';max-age=60';
+            document.cookie = 'usrid='+msg.usrid+';max-age=3600';
 
             that.props.handleCreateOrJoinRoom({flag:'create', ...roominfo});
         });
